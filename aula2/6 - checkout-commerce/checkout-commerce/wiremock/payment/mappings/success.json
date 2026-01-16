@@ -1,0 +1,14 @@
+{
+    "priority": 5,
+    "request": {
+        "method": "POST",
+        "url": "/payments/process"
+    },
+    "response": {
+        "status": 200,
+        "body": "{\"status\":\"success\",\"transactionId\":\"12345ABC\",\"message\":\"Payment processed successfully\"}",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "priority": 2,
+    "request": {
+        "method": "POST",
+        "url": "/payments/process",
+        "bodyPatterns": [
+            {
+                "matchesJsonPath": "$[?(@.customer_email == 'payment_500@example.com')]"
+            }
+        ]
+    },
+    "response": {
+        "status": 500,
+        "body": "{\"status\":\"error\",\"error\":\"internal_server_error\",\"message\":\"Payment gateway temporarily unavailable\"}",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}
