@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: checkout-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: checkout_db
+    ports:
+      - "5442:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checkout_user -d checkout_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment-service:
+    image: wiremock/wiremock:latest
+    container_name: payment-service-mock
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./wiremock/payment:/home/wiremock
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/__admin/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  inventory-service:
+    image: wiremock/wiremock:latest
+    container_name: inventory-service-mock
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./wiremock/inventory:/home/wiremock
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/__admin/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  order-service:
+    image: wiremock/wiremock:latest
+    container_name: order-service-mock
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./wiremock/order:/home/wiremock
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/__admin/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: checkout-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
